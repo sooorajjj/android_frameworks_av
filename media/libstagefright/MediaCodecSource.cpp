@@ -37,6 +37,7 @@
 #include <media/stagefright/MetaData.h>
 #include <media/stagefright/PersistentSurface.h>
 #include <media/stagefright/Utils.h>
+#include <stagefright/AVExtensions.h>
 
 namespace android {
 
@@ -680,6 +681,9 @@ status_t MediaCodecSource::feedEncoderInputBuffers() {
             // push decoding time for video, or drift time for audio
             if (mIsVideo) {
                 mDecodingTimeQueue.push_back(timeUs);
+                if (mFlags & FLAG_USE_METADATA_INPUT) {
+                    AVUtils::get()->addDecodingTimesFromBatch(mbuf, mDecodingTimeQueue);
+                }
             } else {
 #if DEBUG_DRIFT_TIME
                 if (mFirstSampleTimeUs < 0ll) {
@@ -866,6 +870,9 @@ void MediaCodecSource::onMessageReceived(const sp<AMessage> &msg) {
             MediaBuffer *mbuf = new MediaBuffer(outbuf->size());
             mbuf->setObserver(this);
             mbuf->add_ref();
+            memcpy(mbuf->data(), outbuf->data(), outbuf->size());
+            sp<MetaData> meta = mbuf->meta_data();
+            AVUtils::get()->setDeferRelease(meta);
 
             if (!(flags & MediaCodec::BUFFER_FLAG_CODECCONFIG)) {
                 if (mIsVideo) {
