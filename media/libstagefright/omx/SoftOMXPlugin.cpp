@@ -78,6 +78,9 @@ static const struct {
     { "OMX.google.raw.decoder", "rawdec", "audio_decoder.raw" },
     { "OMX.google.flac.encoder", "flacenc", "audio_encoder.flac" },
     { "OMX.google.gsm.decoder", "gsmdec", "audio_decoder.gsm" },
+#ifdef QTI_FLAC_DECODER
+    { "OMX.qti.audio.decoder.flac", "flacdec", "audio_decoder.flac" },
+#endif
 #ifdef DOLBY_ENABLE
     { "OMX.dolby.ac3.decoder", "ddpdec", "audio_decoder.ac3" },
     { "OMX.dolby.eac3.decoder", "ddpdec", "audio_decoder.eac3" },
