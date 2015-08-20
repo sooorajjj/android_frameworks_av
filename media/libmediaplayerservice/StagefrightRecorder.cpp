@@ -942,9 +942,7 @@ sp<MediaCodecSource> StagefrightRecorder::createAudioSource() {
             return NULL;
         }
     }
-
-    sp<AudioSource> audioSource =
-        new AudioSource(
+    sp<AudioSource> audioSource = AVFactory::get()->createAudioSource(
                 mAudioSource,
                 mOpPackageName,
                 sourceSampleRate,
@@ -1062,13 +1060,20 @@ status_t StagefrightRecorder::setupRawAudioRecording() {
     }
 
     sp<MediaCodecSource> audioEncoder = createAudioSource();
-    if (audioEncoder == NULL) {
+    if (audioEncoder != NULL) {
+        CHECK(mWriter != 0);
+        mWriter->addSource(audioEncoder);
+        mAudioEncoderSource = audioEncoder;
+    } else if (audioEncoder == NULL && mAudioEncoder == AUDIO_ENCODER_LPCM) {
+        sp<MediaSource> src;
+        src = setPCMRecording();
+        CHECK(mWriter != 0);
+        mWriter->addSource(src);
+    }
+    else if (audioEncoder == NULL) {
         return UNKNOWN_ERROR;
     }
 
-    CHECK(mWriter != 0);
-    mWriter->addSource(audioEncoder);
-    mAudioEncoderSource = audioEncoder;
 
     if (mMaxFileDurationUs != 0) {
         mWriter->setMaxFileDuration(mMaxFileDurationUs);
