@@ -307,6 +307,10 @@ status_t convertMetaDataToMessage(
 
         CHECK(size >= 7);
         //CHECK_EQ((unsigned)ptr[0], 1u);  // configurationVersion == 1
+        if (size < 23) {  // configurationVersion == 1
+            ALOGE("b/23680780 size=%d ptr0=%x", size, ptr[0]);
+            return BAD_VALUE;
+        }
         uint8_t profile __unused = ptr[1] & 31;
         uint8_t level __unused = ptr[12];
         ptr += 22;
