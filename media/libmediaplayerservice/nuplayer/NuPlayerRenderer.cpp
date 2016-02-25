@@ -124,7 +124,7 @@ NuPlayer::Renderer::Renderer(
       mNextAudioClockUpdateTimeUs(-1),
       mLastAudioMediaTimeUs(-1),
       mAudioOffloadPauseTimeoutGeneration(0),
-      mAudioTornDown(false),
+      mAudioTearingDown(false),
       mCurrentOffloadInfo(AUDIO_INFO_INITIALIZER),
       mCurrentPcmInfo(AUDIO_PCMINFO_INITIALIZER),
       mTotalBuffersQueued(0),
@@ -673,6 +673,12 @@ void NuPlayer::Renderer::onMessageReceived(const sp<AMessage> &msg) {
             break;
         }
 
+        case kWhatAudioTearDownComplete:
+        {
+            onAudioTearDownComplete();
+            break;
+        }
+
         case kWhatAudioOffloadPauseTimeout:
         {
             int32_t generation;
@@ -893,7 +899,7 @@ void NuPlayer::Renderer::drainAudioQueueUntilLastEOS() {
 
 bool NuPlayer::Renderer::onDrainAudioQueue() {
     // do not drain audio during teardown as queued buffers may be invalid.
-    if (mAudioTornDown) {
+    if (mAudioTearingDown) {
         return false;
     }
     // TODO: This call to getPosition checks if AudioTrack has been created
@@ -1726,10 +1732,10 @@ bool NuPlayer::Renderer::getSyncQueues() {
 }
 
 void NuPlayer::Renderer::onAudioTearDown(AudioTearDownReason reason) {
-    if (mAudioTornDown) {
+    if (mAudioTearingDown) {
         return;
     }
-    mAudioTornDown = true;
+    mAudioTearingDown = true;
 
     int64_t currentPositionUs;
     sp<AMessage> notify = mNotify->dup();
@@ -1774,6 +1780,11 @@ status_t NuPlayer::Renderer::onOpenAudioSink(
         uint32_t flags) {
     ALOGV("openAudioSink: offloadOnly(%d) offloadingAudio(%d)",
             offloadOnly, offloadingAudio());
+
+    if (mAudioTearingDown) {
+        ALOGW("openAudioSink: not opening now!, would happen after teardown");
+        return OK;
+    }
     bool audioSinkChanged = false;
 
     int32_t numChannels;
@@ -1968,7 +1979,6 @@ status_t NuPlayer::Renderer::onOpenAudioSink(
     if (audioSinkChanged) {
         onAudioSinkChanged();
     }
-    mAudioTornDown = false;
     return OK;
 }
 
@@ -1976,6 +1986,14 @@ void NuPlayer::Renderer::onCloseAudioSink() {
     mAudioSink->close();
     mCurrentOffloadInfo = AUDIO_INFO_INITIALIZER;
     mCurrentPcmInfo = AUDIO_PCMINFO_INITIALIZER;
+}
+
+void NuPlayer::Renderer::signalAudioTearDownComplete() {
+    (new AMessage(kWhatAudioTearDownComplete, this))->post();
+}
+
+void NuPlayer::Renderer::onAudioTearDownComplete() {
+    mAudioTearingDown = false;
 }
 
 }  // namespace android
