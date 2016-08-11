@@ -34,7 +34,6 @@
 
 #include <inttypes.h>
 
-#include "stagefright/AVExtensions.h"
 namespace android {
 
 /*
