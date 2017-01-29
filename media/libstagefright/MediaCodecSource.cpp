@@ -475,6 +475,8 @@ status_t MediaCodecSource::initEncoder() {
             ((mFlags & FLAG_PREFER_SOFTWARE_CODEC) ? MediaCodecList::kPreferSoftwareCodecs : 0),
             &matchingCodecs);
 
+    if (matchingCodecs.size() == 0)
+        AVUtils::get()->useQCHWEncoder(mOutputFormat, &matchingCodecs);
     status_t err = NO_INIT;
     for (size_t ix = 0; ix < matchingCodecs.size(); ++ix) {
         mEncoder = MediaCodec::CreateByComponentName(
