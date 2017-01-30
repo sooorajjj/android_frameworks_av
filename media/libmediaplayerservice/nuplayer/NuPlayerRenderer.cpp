@@ -31,8 +31,9 @@
 #include <media/stagefright/MetaData.h>
 #include <media/stagefright/Utils.h>
 #include <media/stagefright/VideoFrameScheduler.h>
-
 #include <inttypes.h>
+
+#include "stagefright/AVExtensions.h"
 
 namespace android {
 
