@@ -154,15 +154,12 @@ class MediaPlayerService : public BnMediaPlayerService
                 int event, void *me, void *info);
                void             deleteRecycledTrack_l();
                void             close_l();
-<<<<<<< HEAD
-           status_t             updateTrack();
-=======
 #ifdef DOLBY_ENABLE
                void             setDolbyParameters(const String8& keyValuePairs);
                void             updateTrackOnAudioProcessed(sp<AudioTrack> t, bool trackReused);
                bool             mProcessedAudio;
 #endif // DOLBY_END
->>>>>>> 397691f... Merge DAX changes
+           status_t             updateTrack();
 
         sp<AudioTrack>          mTrack;
         sp<AudioTrack>          mRecycledTrack;

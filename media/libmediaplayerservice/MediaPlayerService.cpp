@@ -1890,7 +1890,7 @@ status_t MediaPlayerService::AudioOutput::open(
 #ifdef DOLBY_ENABLE
             updateTrackOnAudioProcessed(mTrack, reuse);
 #endif // DOLBY_END
-            return OK;
+            return updateTrack();
         }
     }
 
